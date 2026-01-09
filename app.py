@@ -3,6 +3,16 @@ import pandas as pd
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
 
+
+with st.sidebar:
+    st.image("https://cdn-icons-png.flaticon.com/512/716/716784.png", width=80)
+    st.title("PENMADARC")
+    st.write("---")
+    st.button("🏠 Dashboard")
+    st.button("👤 Profil Saya")
+    st.write("---")
+    if st.button("🔴 Logout"):
+        st.stop()
 # --- KONFIGURASI ---
 st.set_page_config(page_title="PENMADARC Dashboard", layout="wide")
 
@@ -88,3 +98,4 @@ if files:
         use_container_width=True,
         disabled=True
     )
+
