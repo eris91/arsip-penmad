@@ -1,0 +1,35 @@
+/* Meniru gaya PENMADARC */
+.stApp {
+    background-color: #f8f9fc;
+}
+
+h1, h2, h3 {
+    color: #4e73df;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+}
+
+/* Bergaya Card seperti di gambar Laravel Anda */
+.stMarkdown div[data-testid="stVerticalBlock"] > div:has(div.card) {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+}
+
+/* Tombol Biru Indigo */
+.stButton>button {
+    background-color: #4e73df;
+    color: white;
+    border-radius: 10px;
+    width: 100%;
+    border: none;
+    padding: 10px;
+    font-weight: 600;
+}
+
+.stButton>button:hover {
+    background-color: #2e59d9;
+    color: white;
+}
