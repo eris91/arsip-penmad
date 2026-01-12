@@ -39,7 +39,7 @@ with col_title:
     st.title("Dashboard / Semua Arsip")
 
 # --- STATS CARDS (Mirip Gambar 2 Laravel Anda) ---
-files = list_files("ID_FOLDER_DRIVE_ANDA")
+files = list_files("1U5XMxpbieUcwpqOZYUqbxWQfTkJye6AG")
 total_arsip = len(files)
 # Contoh filter sederhana untuk kategori
 total_foto = sum(1 for f in files if f['name'].lower().endswith(('.png', '.jpg', '.jpeg')))
@@ -98,4 +98,5 @@ if files:
         use_container_width=True,
         disabled=True
     )
+
 
