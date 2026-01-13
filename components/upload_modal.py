@@ -25,26 +25,27 @@ def render_upload_modal():
         # -------------------------
         # OAuth guard (wajib)
         # -------------------------
-        service, ok = get_service()
-        if not ok:
-            st.warning("Silakan login Google dulu untuk menyimpan arsip ke Drive.")
-            st.link_button(
-                "🔐 Login dengan Google",
-                st.session_state.get("google_auth_url", "#"),
-                use_container_width=True
-            )
+       try:
+    service = get_service()
+except RuntimeError as e:
+    if str(e) == "NOT_AUTHENTICATED_OAUTH":
+        st.warning("Silakan login Google dulu untuk menyimpan arsip ke Drive.")
+        st.link_button(
+            "🔐 Login dengan Google",
+            st.session_state.get("google_auth_url", "#"),
+            use_container_width=True
+        )
 
-            st.caption("Setelah login, Anda akan kembali ke aplikasi. Jika dialog ini tertutup, klik **Tambah Arsip** lagi.")
-
-            c1, c2 = st.columns([1, 1])
-            with c1:
-                if st.button("🔄 Saya sudah login, refresh halaman", use_container_width=True):
-                    st.rerun()
-            with c2:
-                if st.button("Tutup", use_container_width=True):
-                    st.session_state.open_upload = False
-                    st.rerun()
-            return
+        c1, c2 = st.columns([1, 1])
+        with c1:
+            if st.button("🔄 Saya sudah login, refresh", use_container_width=True):
+                st.rerun()
+        with c2:
+            if st.button("Tutup", use_container_width=True):
+                st.session_state.open_upload = False
+                st.rerun()
+        return
+    raise
 
         # -------------------------
         # Form input
@@ -164,4 +165,5 @@ def render_upload_modal():
                 )
 
     modal()
+
 
