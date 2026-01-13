@@ -5,8 +5,8 @@ from googleapiclient.http import MediaIoBaseUpload
 from google_auth_oauthlib.flow import Flow
 from google.oauth2.credentials import Credentials
 
-# Pilih salah satu:
-# - drive.file: lebih aman (hanya file yg dibuat/diopen oleh app)
+# Scope:
+# - drive.file: aman & cukup untuk upload arsip yang dibuat app
 # - drive: akses penuh (lebih luas)
 SCOPES = ["https://www.googleapis.com/auth/drive.file"]
 
@@ -24,19 +24,20 @@ def _client_config():
 
 def get_service():
     """
-    Return (service, ok)
-    ok=False berarti user belum login; auth_url ada di st.session_state["google_auth_url"]
+    Return service Drive v3 menggunakan OAuth.
+    Kalau belum login:
+      - set st.session_state["google_auth_url"]
+      - raise RuntimeError agar UI bisa menampilkan tombol login
     """
     client_config = _client_config()
     redirect_uri = st.secrets["google_oauth"]["redirect_uri"]
 
-    # 1) jika kredensial sudah ada di session
+    # 1) sudah ada creds di session
     if "google_creds" in st.session_state:
         creds = Credentials.from_authorized_user_info(st.session_state["google_creds"], scopes=SCOPES)
-        service = build("drive", "v3", credentials=creds, cache_discovery=False)
-        return service, True
+        return build("drive", "v3", credentials=creds, cache_discovery=False)
 
-    # 2) jika ini callback OAuth (?code=...)
+    # 2) callback OAuth (ada code)
     qp = st.query_params
     if "code" in qp:
         flow = Flow.from_client_config(client_config, scopes=SCOPES, redirect_uri=redirect_uri)
@@ -52,13 +53,11 @@ def get_service():
             "scopes": creds.scopes,
         }
 
-        # bersihkan param code biar tidak fetch berulang
+        # bersihkan param agar tidak fetch ulang
         st.query_params.clear()
+        return build("drive", "v3", credentials=creds, cache_discovery=False)
 
-        service = build("drive", "v3", credentials=creds, cache_discovery=False)
-        return service, True
-
-    # 3) belum login -> buat auth url
+    # 3) belum login -> buat URL login
     flow = Flow.from_client_config(client_config, scopes=SCOPES, redirect_uri=redirect_uri)
     auth_url, _ = flow.authorization_url(
         access_type="offline",
@@ -66,10 +65,11 @@ def get_service():
         prompt="consent",
     )
     st.session_state["google_auth_url"] = auth_url
-    return None, False
+    raise RuntimeError("NOT_AUTHENTICATED_OAUTH")
 
-
-# ====== fungsi kamu (tetap sama) ======
+def logout():
+    st.session_state.pop("google_creds", None)
+    st.session_state.pop("google_auth_url", None)
 
 def list_children(service, parent_id: str, only_folders: bool = False):
     q = f"'{parent_id}' in parents and trashed=false"
@@ -82,6 +82,8 @@ def list_children(service, parent_id: str, only_folders: bool = False):
     return res.get("files", [])
 
 def find_folder(service, parent_id: str, name: str):
+    # NOTE: name='...' raw bisa bermasalah kalau ada apostrof.
+    # untuk aman, idealnya escape. sementara cukup untuk nama standar.
     q = (
         "mimeType='application/vnd.google-apps.folder' "
         f"and name='{name}' and '{parent_id}' in parents and trashed=false"
