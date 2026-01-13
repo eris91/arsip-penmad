@@ -24,29 +24,9 @@ def render_upload_modal():
     @st.dialog("Tambah Arsip")
     def modal():
         # =========================
-        # OAuth guard (versi raise)
+        # Drive service (Service Account)
         # =========================
-        try:
-            service = get_service()
-        except RuntimeError as e:
-            if str(e) == "NOT_AUTHENTICATED_OAUTH":
-                st.warning("Silakan login Google dulu untuk menyimpan arsip ke Drive.")
-                st.link_button(
-                    "🔐 Login dengan Google",
-                    st.session_state.get("google_auth_url", "#"),
-                    use_container_width=True,
-                )
-
-                c1, c2 = st.columns([1, 1])
-                with c1:
-                    if st.button("🔄 Saya sudah login, refresh", use_container_width=True):
-                        st.rerun()
-                with c2:
-                    if st.button("Tutup", use_container_width=True):
-                        st.session_state.open_upload = False
-                        st.rerun()
-                return
-            raise
+        service = get_service()
 
         # =========================
         # Form input
@@ -103,11 +83,7 @@ def render_upload_modal():
             return
 
         try:
-            # sesuaikan dengan secrets kamu:
-            # - kalau kamu pakai [drive] root_folder_id, pakai yang ini:
-            # ROOT = st.secrets["drive"]["root_folder_id"]
-            # - kalau kamu masih pakai FOLDER_ID, pakai yang ini:
-            ROOT = st.secrets["FOLDER_ID"]
+            ROOT = st.secrets["FOLDER_ID"]  # folder root DI DALAM SHARED DRIVE
 
             # 1) folder tahun
             tahun_name = str(tgl.year)
@@ -141,7 +117,7 @@ def render_upload_modal():
             )
             upload_text(service, kegiatan_folder_id, "metadata.txt", meta_txt)
 
-            st.success("✅ Arsip berhasil disimpan ke Google Drive")
+            st.success("✅ Arsip berhasil disimpan ke Google Drive (Shared Drive)")
             st.caption(f"Folder: {tahun_name} / {folder_kegiatan_name}")
             st.markdown(f"🔗 Buka folder: https://drive.google.com/drive/folders/{kegiatan_folder_id}")
 
@@ -151,5 +127,11 @@ def render_upload_modal():
         except Exception as e:
             st.error("Gagal menyimpan arsip.")
             st.exception(e)
+
+            st.info(
+                "Pastikan: (1) FOLDER_ID adalah folder di Shared Drive, "
+                "(2) Service Account sudah jadi member Shared Drive (Content manager), "
+                "(3) Drive API aktif."
+            )
 
     modal()
