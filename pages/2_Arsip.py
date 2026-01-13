@@ -30,24 +30,9 @@ with top2:
 # render modal upload bila terbuka
 render_upload_modal()
 
-# =========================
-# OAuth guard (wajib)
-# =========================
-try:
-    service = get_service()
-except RuntimeError as e:
-    if str(e) == "NOT_AUTHENTICATED_OAUTH":
-        st.warning("Silakan login Google dulu untuk mengakses arsip Drive.")
-        st.link_button(
-            "🔐 Login dengan Google",
-            st.session_state.get("google_auth_url", "#"),
-            use_container_width=True
-        )
-        st.stop()
-    raise
-
-# --- load data drive ---
-ROOT = st.secrets["FOLDER_ID"]
+# --- load data drive (Service Account + Shared Drive) ---
+service = get_service()
+ROOT = st.secrets["FOLDER_ID"]  # folder root DI DALAM SHARED DRIVE
 
 # list folder tahun
 children = list_children(service, ROOT, only_folders=True)
@@ -82,7 +67,9 @@ for year_name, year_id in targets:
     # folder kegiatan dalam tahun
     kegiatan_folders = list_children(service, year_id, only_folders=True)
 
-    # perhitungan arsip_tahun_ini (fallback sederhana)
+    # arsip_tahun_ini:
+    # - kalau user pilih tahun tertentu: jumlah kegiatan di tahun itu
+    # - kalau semua tahun: nanti kita set ke tahun terbaru (di bawah)
     if filters["tahun"] != "Semua Tahun":
         arsip_tahun_ini = len(kegiatan_folders)
 
@@ -124,7 +111,7 @@ for year_name, year_id in targets:
 # cards (tampilkan ringkasan)
 selected_year = filters["tahun"]
 if selected_year == "Semua Tahun":
-    # kalau semua tahun, hitung arsip_tahun_ini = tahun terbaru (jika ada)
+    # kalau semua tahun, arsip_tahun_ini = jumlah kegiatan di tahun terbaru (jika ada)
     if years:
         newest_year_id = years[0][1]
         arsip_tahun_ini = len(list_children(service, newest_year_id, only_folders=True))
