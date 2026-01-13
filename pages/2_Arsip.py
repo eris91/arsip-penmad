@@ -30,8 +30,23 @@ with top2:
 # render modal upload bila terbuka
 render_upload_modal()
 
+# =========================
+# OAuth guard (wajib)
+# =========================
+try:
+    service = get_service()
+except RuntimeError as e:
+    if str(e) == "NOT_AUTHENTICATED_OAUTH":
+        st.warning("Silakan login Google dulu untuk mengakses arsip Drive.")
+        st.link_button(
+            "🔐 Login dengan Google",
+            st.session_state.get("google_auth_url", "#"),
+            use_container_width=True
+        )
+        st.stop()
+    raise
+
 # --- load data drive ---
-service = get_service()
 ROOT = st.secrets["FOLDER_ID"]
 
 # list folder tahun
@@ -60,14 +75,16 @@ total_arsip = 0
 total_foto = 0
 arsip_tahun_ini = 0
 
-q = (filters["q"] or "").strip().lower()
-jenis = filters["jenis"]
+q = (filters.get("q") or "").strip().lower()
+jenis = filters.get("jenis")
 
 for year_name, year_id in targets:
     # folder kegiatan dalam tahun
     kegiatan_folders = list_children(service, year_id, only_folders=True)
-    if year_name == str(st.session_state.get("year_now", "")) or filters["tahun"] != "Semua Tahun":
-        arsip_tahun_ini += len(kegiatan_folders)
+
+    # perhitungan arsip_tahun_ini (fallback sederhana)
+    if filters["tahun"] != "Semua Tahun":
+        arsip_tahun_ini = len(kegiatan_folders)
 
     for k in kegiatan_folders:
         total_arsip += 1
@@ -105,13 +122,12 @@ for year_name, year_id in targets:
         })
 
 # cards (tampilkan ringkasan)
-# arsip_tahun_ini: kalau user pilih tahun tertentu, cards akan fokus ke tahun itu
 selected_year = filters["tahun"]
-if selected_year != "Semua Tahun":
-    # override: arsip_tahun_ini = jumlah arsip tahun yang dipilih
-    yid = dict(years).get(selected_year)
-    if yid:
-        arsip_tahun_ini = len(list_children(service, yid, only_folders=True))
+if selected_year == "Semua Tahun":
+    # kalau semua tahun, hitung arsip_tahun_ini = tahun terbaru (jika ada)
+    if years:
+        newest_year_id = years[0][1]
+        arsip_tahun_ini = len(list_children(service, newest_year_id, only_folders=True))
 
 render_cards(total_arsip=total_arsip, arsip_tahun_ini=arsip_tahun_ini, total_foto=total_foto)
 
