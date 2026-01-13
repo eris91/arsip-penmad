@@ -1,6 +1,6 @@
 import streamlit as st
 from datetime import date
-from services.gdrive_oauth import (
+from services.gdrive import (
     get_service, get_or_create_folder, upload_file, upload_text
 )
 from services.utils import make_activity_folder_name, safe_text
@@ -164,3 +164,4 @@ def render_upload_modal():
                 )
 
     modal()
+
