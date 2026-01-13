@@ -1,6 +1,6 @@
 import streamlit as st
 from datetime import date
-from services.gdrive import (
+from services.gdrive_oauth import (
     get_service, get_or_create_folder, upload_file, upload_text
 )
 from services.utils import make_activity_folder_name, safe_text
@@ -22,6 +22,22 @@ def render_upload_modal():
 
     @st.dialog("Tambah Arsip")
     def modal():
+        # --- OAuth guard (wajib sebelum upload) ---
+        service, ok = get_service()
+        if not ok:
+            st.warning("Silakan login Google dulu untuk menyimpan arsip ke My Drive.")
+            st.link_button("🔐 Login dengan Google", st.session_state.get("google_auth_url", "#"), use_container_width=True)
+
+            c1, c2 = st.columns([1, 1])
+            with c1:
+                if st.button("Tutup", use_container_width=True):
+                    st.session_state.open_upload = False
+                    st.rerun()
+            with c2:
+                st.caption("Setelah login, kembali ke dialog ini lalu klik Simpan.")
+            return
+
+        # --- Form input ---
         cA, cB = st.columns(2)
         with cA:
             tgl = st.date_input("TANGGAL", value=date.today())
@@ -61,8 +77,8 @@ def render_upload_modal():
                 return
 
             try:
-                service = get_service()
-                ROOT = st.secrets["FOLDER_ID"]
+                # ROOT folder target (punya user OAuth)
+                ROOT = st.secrets["drive"]["root_folder_id"]  # <-- ubah secrets jadi rapi
 
                 # 1) folder tahun
                 tahun_name = str(tgl.year)
@@ -103,7 +119,7 @@ def render_upload_modal():
                 st.rerun()
 
             except Exception as e:
-                st.error("Gagal menyimpan arsip. Cek secrets, izin folder, dan Drive API.")
+                st.error("Gagal menyimpan arsip.")
                 st.exception(e)
 
     modal()
