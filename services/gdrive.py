@@ -2,14 +2,74 @@ import io
 import streamlit as st
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
-from google.oauth2 import service_account
+from google_auth_oauthlib.flow import Flow
+from google.oauth2.credentials import Credentials
 
-SCOPES = ["https://www.googleapis.com/auth/drive"]
+# Pilih salah satu:
+# - drive.file: lebih aman (hanya file yg dibuat/diopen oleh app)
+# - drive: akses penuh (lebih luas)
+SCOPES = ["https://www.googleapis.com/auth/drive.file"]
+
+def _client_config():
+    cfg = st.secrets["google_oauth"]
+    return {
+        "web": {
+            "client_id": cfg["client_id"],
+            "client_secret": cfg["client_secret"],
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "redirect_uris": [cfg["redirect_uri"]],
+        }
+    }
 
 def get_service():
-    info = st.secrets["gcp_service_account"]
-    creds = service_account.Credentials.from_service_account_info(info, scopes=SCOPES)
-    return build("drive", "v3", credentials=creds)
+    """
+    Return (service, ok)
+    ok=False berarti user belum login; auth_url ada di st.session_state["google_auth_url"]
+    """
+    client_config = _client_config()
+    redirect_uri = st.secrets["google_oauth"]["redirect_uri"]
+
+    # 1) jika kredensial sudah ada di session
+    if "google_creds" in st.session_state:
+        creds = Credentials.from_authorized_user_info(st.session_state["google_creds"], scopes=SCOPES)
+        service = build("drive", "v3", credentials=creds, cache_discovery=False)
+        return service, True
+
+    # 2) jika ini callback OAuth (?code=...)
+    qp = st.query_params
+    if "code" in qp:
+        flow = Flow.from_client_config(client_config, scopes=SCOPES, redirect_uri=redirect_uri)
+        flow.fetch_token(code=qp["code"])
+        creds = flow.credentials
+
+        st.session_state["google_creds"] = {
+            "token": creds.token,
+            "refresh_token": creds.refresh_token,
+            "token_uri": creds.token_uri,
+            "client_id": creds.client_id,
+            "client_secret": creds.client_secret,
+            "scopes": creds.scopes,
+        }
+
+        # bersihkan param code biar tidak fetch berulang
+        st.query_params.clear()
+
+        service = build("drive", "v3", credentials=creds, cache_discovery=False)
+        return service, True
+
+    # 3) belum login -> buat auth url
+    flow = Flow.from_client_config(client_config, scopes=SCOPES, redirect_uri=redirect_uri)
+    auth_url, _ = flow.authorization_url(
+        access_type="offline",
+        include_granted_scopes="true",
+        prompt="consent",
+    )
+    st.session_state["google_auth_url"] = auth_url
+    return None, False
+
+
+# ====== fungsi kamu (tetap sama) ======
 
 def list_children(service, parent_id: str, only_folders: bool = False):
     q = f"'{parent_id}' in parents and trashed=false"
