@@ -10,7 +10,7 @@ def render_sidebar():
 
         # Streamlit multipage otomatis sudah ada di sidebar,
         # tombol manual di sini opsional saja.
-        st.markdown("### Menu Cepat")
+        st.markdown("### Menu")
         st.page_link("pages/1_Dashboard.py", label="🏠 Dashboard")
         st.page_link("pages/2_Arsip.py", label="🗂️ Arsip")
         st.page_link("pages/3_Laporan.py", label="📊 Laporan")
@@ -22,3 +22,4 @@ def render_sidebar():
             # Placeholder (untuk nanti kalau ada auth)
             st.warning("Logout (demo).")
             st.stop()
+
