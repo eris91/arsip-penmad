@@ -10,9 +10,9 @@ with st.sidebar:
     st.write("---")
 
     st.page_link("app.py", label="🏠 Dashboard")
-    st.page_link("pages/Arsip.py", label="📁 Arsip")  # sesuaikan nama file
-    st.page_link("pages/Laporan.py", label="📊 Laporan", disabled=True)  # opsional
-    st.page_link("pages/Admin.py", label="⚙️ Admin", disabled=True)      # opsional
+    st.page_link("pages/2_Arsip.py", label="📁 Arsip")  # sesuaikan nama file
+    st.page_link("pages/3_Laporan.py", label="📊 Laporan", disabled=True)  # opsional
+    st.page_link("pages/4_Admin.py", label="⚙️ Admin", disabled=True)      # opsional
 
     st.write("---")
     st.button("🔴 Logout")
@@ -28,4 +28,5 @@ c3.metric("Foto", "—")
 
 st.info("Untuk melihat detail arsip kegiatan, silakan buka menu **Arsip**.")
 if st.button("➡️ Buka Arsip"):
-    st.switch_page("pages/Arsip.py")
+    st.switch_page("pages/2_Arsip.py")
+
