@@ -71,7 +71,7 @@ for year_name, year_id in targets:
         arsip_tahun_ini = len(kegiatan_folders)
 
     for k in kegiatan_folders:
-        total_arsip += 1
+   
 
         folder_name = k["name"]
         parts = [p.strip() for p in folder_name.split(" - ")]
@@ -83,8 +83,7 @@ for year_name, year_id in targets:
         # hitung lampiran
         foto_count = count_items_in_subfolder(service, k["id"], "FOTO")
         dok_count  = count_items_in_subfolder(service, k["id"], "DOKUMEN")
-        total_foto += foto_count
-        total_lampiran = foto_count + dok_count
+
 
         # filter jenis
         if jenis == "Foto" and foto_count == 0:
@@ -116,4 +115,5 @@ if selected_year == "Semua Tahun":
 
 # table
 render_table(rows)
+
 
