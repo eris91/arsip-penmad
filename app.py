@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(page_title="PENMADARC Dashboard", layout="wide")
+st.set_page_config(page_title="Arsip Penmad Dashboard", layout="wide")
 
 # Load CSS
 try:
@@ -36,3 +36,4 @@ col2.metric("Arsip Tahun Ini", "—")
 col3.metric("Foto & Dokumen", "—")
 
 st.info("Silakan buka menu **Arsip** untuk melihat daftar arsip dan file.")
+
