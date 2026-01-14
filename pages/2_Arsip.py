@@ -1,5 +1,4 @@
 import streamlit as st
-import re
 
 from components.sidebar import render_sidebar
 from components.filters import render_filters
@@ -44,18 +43,14 @@ year_options = ["Semua Tahun"] + [y[0] for y in years]
 filters = render_filters(year_options)
 
 # tentukan tahun folder target
-targets = []
 if filters["tahun"] == "Semua Tahun":
     targets = years
 else:
     year_map = dict(years)
-    if filters["tahun"] in year_map:
-        targets = [(filters["tahun"], year_map[filters["tahun"]])]
+    targets = [(filters["tahun"], year_map[filters["tahun"]])] if filters["tahun"] in year_map else []
 
 # kumpulkan baris tabel dari folder kegiatan
 rows = []
-
-
 
 q = (filters.get("q") or "").strip().lower()
 jenis = filters.get("jenis")
@@ -64,15 +59,7 @@ for year_name, year_id in targets:
     # folder kegiatan dalam tahun
     kegiatan_folders = list_children(service, year_id, only_folders=True)
 
-    # arsip_tahun_ini:
-    # - kalau user pilih tahun tertentu: jumlah kegiatan di tahun itu
-    # - kalau semua tahun: nanti kita set ke tahun terbaru (di bawah)
-    if filters["tahun"] != "Semua Tahun":
-        arsip_tahun_ini = len(kegiatan_folders)
-
     for k in kegiatan_folders:
-   
-
         folder_name = k["name"]
         parts = [p.strip() for p in folder_name.split(" - ")]
 
@@ -83,7 +70,7 @@ for year_name, year_id in targets:
         # hitung lampiran
         foto_count = count_items_in_subfolder(service, k["id"], "FOTO")
         dok_count  = count_items_in_subfolder(service, k["id"], "DOKUMEN")
-
+        total_lampiran = foto_count + dok_count
 
         # filter jenis
         if jenis == "Foto" and foto_count == 0:
@@ -93,7 +80,7 @@ for year_name, year_id in targets:
 
         # filter search
         if q:
-            if q not in kegiatan.lower() and q not in pic.lower() and q not in folder_name.lower():
+            if (q not in kegiatan.lower()) and (q not in pic.lower()) and (q not in folder_name.lower()):
                 continue
 
         rows.append({
@@ -104,16 +91,5 @@ for year_name, year_id in targets:
             "AKSI": f"https://drive.google.com/drive/folders/{k['id']}"
         })
 
-# cards (tampilkan ringkasan)
-selected_year = filters["tahun"]
-if selected_year == "Semua Tahun":
-    # kalau semua tahun, arsip_tahun_ini = jumlah kegiatan di tahun terbaru (jika ada)
-    if years:
-        newest_year_id = years[0][1]
-        arsip_tahun_ini = len(list_children(service, newest_year_id, only_folders=True))
-
-
 # table
 render_table(rows)
-
-
