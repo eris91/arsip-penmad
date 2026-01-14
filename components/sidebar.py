@@ -3,8 +3,8 @@ import streamlit as st
 def render_sidebar():
     with st.sidebar:
         st.image("https://cdn-icons-png.flaticon.com/512/716/716784.png", width=70)
-        st.markdown("## PENMADARC")
-        st.caption("Arsip Digital Seksi Penmad")
+        st.markdown("## ADP")
+        st.caption("Arsip Digital Penmad")
 
         st.divider()
 
@@ -22,4 +22,5 @@ def render_sidebar():
             # Placeholder (untuk nanti kalau ada auth)
             st.warning("Logout (demo).")
             st.stop()
+
 
