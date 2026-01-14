@@ -1,39 +1,31 @@
 import streamlit as st
-import pandas as pd
 
-st.set_page_config(page_title="Arsip Penmad Dashboard", layout="wide")
+st.set_page_config(page_title="Arsip Penmad", layout="wide")
 
-# Load CSS
-try:
-    with open("style.css") as f:
-        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-except FileNotFoundError:
-    pass
-
-# Sidebar (pakai navigation sederhana)
+# === Sidebar Menu ===
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/716/716784.png", width=80)
-    st.title("ARSIP PENMAD")
+    st.markdown("## PENMADARC")
+    st.caption("Arsip Digital Seksi Penmad")
     st.write("---")
 
     st.page_link("app.py", label="🏠 Dashboard")
-    st.page_link("pages/arsip.py", label="📁 Arsip")      # sesuaikan nama file page kamu
-    st.page_link("pages/laporan.py", label="📊 Laporan")  # kalau ada
-    st.page_link("pages/admin.py", label="⚙️ Admin")      # kalau ada
+    st.page_link("pages/Arsip.py", label="📁 Arsip")  # sesuaikan nama file
+    st.page_link("pages/Laporan.py", label="📊 Laporan", disabled=True)  # opsional
+    st.page_link("pages/Admin.py", label="⚙️ Admin", disabled=True)      # opsional
 
     st.write("---")
-    if st.button("🔴 Logout"):
-        st.stop()
+    st.button("🔴 Logout")
 
-# Header
-st.write("MENU UTAMA")
-st.title("Dashboard / Semua Arsip")
+# === Konten Dashboard ===
+st.title("Dashboard")
+st.caption("Ringkasan Arsip Penmad")
 
-# Dashboard stat (sementara)
-col1, col2, col3 = st.columns(3)
-col1.metric("Total Arsip", "—")
-col2.metric("Arsip Tahun Ini", "—")
-col3.metric("Foto & Dokumen", "—")
+c1, c2, c3 = st.columns(3)
+c1.metric("Total Arsip", "—")
+c2.metric("Arsip Tahun Ini", "—")
+c3.metric("Foto", "—")
 
-st.info("Silakan buka menu **Arsip** untuk melihat daftar arsip dan file.")
-
+st.info("Untuk melihat detail arsip kegiatan, silakan buka menu **Arsip**.")
+if st.button("➡️ Buka Arsip"):
+    st.switch_page("pages/Arsip.py")
