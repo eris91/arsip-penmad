@@ -2,7 +2,6 @@ import streamlit as st
 import re
 
 from components.sidebar import render_sidebar
-from components.cards import render_cards
 from components.filters import render_filters
 from components.table import render_table
 from components.upload_modal import open_upload_modal_button, render_upload_modal
@@ -56,9 +55,7 @@ else:
 # kumpulkan baris tabel dari folder kegiatan
 rows = []
 
-total_arsip = 0
-total_foto = 0
-arsip_tahun_ini = 0
+
 
 q = (filters.get("q") or "").strip().lower()
 jenis = filters.get("jenis")
@@ -116,7 +113,7 @@ if selected_year == "Semua Tahun":
         newest_year_id = years[0][1]
         arsip_tahun_ini = len(list_children(service, newest_year_id, only_folders=True))
 
-render_cards(total_arsip=total_arsip, arsip_tahun_ini=arsip_tahun_ini, total_foto=total_foto)
 
 # table
 render_table(rows)
+
